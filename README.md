@@ -1,2 +1,18 @@
 # go-webfilter
+
 Pluggable, intercepting web filter written in Go
+
+## Running
+
+This project requires Go and nftables to be installed on your system. Necessary firewall rulles will be created automatically 
+and removed when the program is stopped.
+
+```bash
+sudo go run cmd/webfilter/main.go
+```
+
+### Debug mode
+
+```bash
+sudo go run cmd/webfilter/main.go --debug --dump
+```
