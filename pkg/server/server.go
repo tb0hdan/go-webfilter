@@ -120,6 +120,11 @@ func (s *Server) HandlePath(c echo.Context) error {
 		// If no path parameter is provided, use the root path
 		path = "/"
 	}
+	qs := c.Request().URL.Query()
+	if len(qs) > 0 {
+		// If there are query parameters, append them to the path
+		path += "?" + qs.Encode()
+	}
 	if err := s.IdentifyLocalAddr(c); err != nil {
 		return c.String(http.StatusInternalServerError, "Error identifying local address")
 	}
