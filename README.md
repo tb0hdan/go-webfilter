@@ -1,6 +1,7 @@
 # go-webfilter
 
 Pluggable, intercepting web filter written in Go
+See [Project notes](./PROJECT_NOTES.md) for more details.
 
 ## Running
 
@@ -16,3 +17,4 @@ sudo go run cmd/webfilter/main.go
 ```bash
 sudo go run cmd/webfilter/main.go --debug --dump
 ```
+
