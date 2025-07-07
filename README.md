@@ -1,6 +1,7 @@
 # go-webfilter
 
 Pluggable, intercepting web filter written in Go
+
 See [Project notes](./PROJECT_NOTES.md) for more details.
 
 ## Running
