@@ -1,16 +1,16 @@
 .PHONY: build
 
-all: build-dir lint test build
+all: lint test build
 
 build-dir:
 	@echo "Creating build directory..."
-	@mkdir -p build
+	@mkdir -p build/
 
 lint:
 	@echo "Running linters..."
 	@golangci-lint run ./...
 
-test:
+test: build-dir
 	@echo "Running tests..."
 	@go test -v ./... -coverprofile=build/coverage.out
 	@go tool cover -html=build/coverage.out -o build/coverage.html
