@@ -28,5 +28,9 @@ go.work.sum
 .env
 
 # Editor/IDE
+.claude/
 .idea/
 # .vscode/
+
+# Build directory with certificates
+build/

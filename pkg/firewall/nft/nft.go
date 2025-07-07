@@ -12,13 +12,14 @@ type NFTFirewall struct {
 	logger zerolog.Logger
 }
 
-func (n *NFTFirewall) InstallRules(redirectPort int) error {
+func (n *NFTFirewall) InstallRules(redirectPort int, redirectHTTPSPort int) error {
 	commands := [][]string{
 		{"nft", "add", "table", "ip", "go_webfilter"},
 		{"nft", "add", "chain", "ip", "go_webfilter", "go_webfilter_nat",
 			// meta skuid root return; - Do not process packets coming from user uid == 0 (root)
 			// tcp dport 80 redirect to :<redirectPort>; - Redirect HTTP traffic to the specified port
-			fmt.Sprintf("{meta skuid root return; tcp dport 80 redirect to :%d;}", redirectPort)},
+			// tcp dport 443 redirect to :<redirectHTTPSPort>; - Redirect HTTPS traffic to the specified port
+			fmt.Sprintf("{meta skuid root return; tcp dport 80 redirect to :%d; tcp dport 443 redirect to :%d;}", redirectPort, redirectHTTPSPort)},
 		// https://wiki.nftables.org/wiki-nftables/index.php/Netfilter_hooks
 		// priority dstnat equals to -100
 		{"nft", "add", "chain", "ip", "go_webfilter", "OUTPUT", "{type nat hook output priority dstnat; policy accept; jump go_webfilter_nat; }"},

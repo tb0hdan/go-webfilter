@@ -1,6 +1,6 @@
 package firewall
 
 type Firewall interface {
-	InstallRules(redirectPort int) error
+	InstallRules(redirectPort int, redirectHTTPSPort int) error
 	UninstallRules() error
 }

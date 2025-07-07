@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net"
@@ -14,16 +13,29 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/tb0hdan/go-webfilter/pkg/firewall"
 	"github.com/tb0hdan/go-webfilter/pkg/firewall/nft"
+	"github.com/tb0hdan/go-webfilter/pkg/hooks"
 	"github.com/tb0hdan/go-webfilter/pkg/proc"
 	"github.com/tb0hdan/go-webfilter/pkg/utils"
 )
 
 type Server struct {
-	Port       int
-	dump       bool
-	logger     zerolog.Logger
-	procLister *proc.ProcLister
-	fw         firewall.Firewall
+	Port        int
+	HTTPSPort   int
+	dump        bool
+	logger      zerolog.Logger
+	procLister  proc.Lister
+	fw          firewall.Firewall
+	serverHooks hooks.Hook
+}
+
+func (s *Server) SetHooks(serverHooks hooks.Hook) {
+	if serverHooks == nil {
+		s.logger.Warn().Msg("No serverHooks provided, using default serverHooks")
+		s.serverHooks = &hooks.EmptyHookImpl{}
+		return
+	}
+	s.serverHooks = serverHooks
+	s.logger.Info().Msg("Hooks set for the server")
 }
 
 func (s *Server) IdentifyLocalAddr(c echo.Context) error {
@@ -109,61 +121,6 @@ func (s *Server) DumpResponse(rsp *http.Response) {
 	fmt.Printf("Response: %s", rspDump)
 }
 
-func (s *Server) HandlePath(c echo.Context) error {
-	var (
-		err     error
-		reqBody []byte
-	)
-	// Extract the path parameter
-	path := c.Param("path")
-	if path == "" {
-		// If no path parameter is provided, use the root path
-		path = "/"
-	}
-	qs := c.Request().URL.Query()
-	if len(qs) > 0 {
-		// If there are query parameters, append them to the path
-		path += "?" + qs.Encode()
-	}
-	if err := s.IdentifyLocalAddr(c); err != nil {
-		return c.String(http.StatusInternalServerError, "Error identifying local address")
-	}
-
-	// Construct the full URL to fetch
-	url := "http://" + c.Request().Host + path
-	if c.Request().Method != http.MethodGet {
-		// prepare body for non-GET requests
-		reqBody, err = io.ReadAll(c.Request().Body)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Error reading request body")
-		}
-	}
-	req, err := http.NewRequestWithContext(c.Request().Context(), c.Request().Method, url, bytes.NewReader(reqBody))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error creating request")
-	}
-	// Copy headers from the original request
-	for name, values := range c.Request().Header {
-		for _, value := range values {
-			req.Header.Add(name, value)
-		}
-	}
-	// Dump the request if dump is enabled
-	s.DumpRequest(req)
-	rsp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error making request")
-	}
-	defer rsp.Body.Close()
-	// Dump the request and response if dump is enabled
-	s.DumpResponse(rsp)
-	data, err := io.ReadAll(rsp.Body)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Error reading response")
-	}
-	return c.Blob(rsp.StatusCode, http.DetectContentType(data), data)
-}
-
 func (s *Server) RegisterRoutes(e *echo.Echo) {
 	e.GET("/", s.HandlePath)
 	e.GET("/:path", s.HandlePath)
@@ -194,9 +151,19 @@ func (s *Server) Setup() {
 	}
 	// Set the server port to the redirect port
 	s.Port = redirectPort
-	fw := nft.New(s.logger)
+
+	// Get a free port for HTTPS
+	httpsPort, err := utils.GetFreePort()
+	if err != nil {
+		fmt.Println("Error getting free port for HTTPS:", err)
+		return
+	}
+	s.HTTPSPort = httpsPort
+	s.logger.Info().Msgf("HTTP server will listen on port %d", s.Port)
+	s.logger.Info().Msgf("HTTPS server will listen on port %d", s.HTTPSPort)
+
 	// Create firewall rules to redirect traffic
-	if err := fw.InstallRules(redirectPort); err != nil {
+	if err := s.fw.InstallRules(redirectPort, httpsPort); err != nil {
 		s.logger.Error().Err(err).Msg("Error installing firewall rules")
 		return
 	}
