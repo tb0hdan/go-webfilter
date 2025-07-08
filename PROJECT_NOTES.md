@@ -7,7 +7,7 @@
 
 ### Core Components
 
-#### 1. Main Entry Point (`cmd/webfilter/main.go`)
+#### 1. Main Entry Point (`examples/standalone/main.go`)
 - **Purpose**: Application entry point with CLI argument parsing
 - **Key Features**:
   - Command-line flags for debug mode and request/response dumping
@@ -127,7 +127,7 @@
 
 ### Development/Debug Mode
 ```bash
-sudo go run cmd/webfilter/main.go --debug --dump
+sudo go run examples/standalone/main.go --debug --dump
 ```
 - Enables debug logging
 - Dumps full HTTP requests and responses
@@ -136,7 +136,7 @@ sudo go run cmd/webfilter/main.go --debug --dump
 
 ### Production Mode
 ```bash
-sudo go run cmd/webfilter/main.go
+sudo go run examples/standalone/main.go
 ```
 - Standard operation with info-level logging
 - Minimal output for production environments
@@ -146,7 +146,7 @@ sudo go run cmd/webfilter/main.go
 
 ```
 go-webfilter/
-├── cmd/webfilter/main.go          # Application entry point
+├── examples/standalone/main.go    # Application entry point
 ├── pkg/
 │   ├── firewall/
 │   │   ├── firewall.go            # Firewall interface

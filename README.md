@@ -10,12 +10,12 @@ This project requires Go and nftables to be installed on your system. Necessary 
 and removed when the program is stopped.
 
 ```bash
-sudo go run cmd/webfilter/main.go
+sudo go run examples/standalone/main.go
 ```
 
 ### Debug mode
 
 ```bash
-sudo go run cmd/webfilter/main.go --debug --dump
+sudo go run examples/standalone/main.go --debug --dump
 ```
 

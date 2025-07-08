@@ -17,7 +17,7 @@ test: build-dir
 
 build:
 	@echo "Building the project..."
-	@go build -o build/go-webfilter ./cmd/webfilter/*.go
+	@go build -o build/go-webfilter examples/standalone/*.go
 
 tools:
 	@echo "Running tools..."
