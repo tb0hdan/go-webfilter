@@ -51,15 +51,23 @@
 
 #### 5. Utilities (`pkg/utils/`)
 - **General Utils** (`utils.go`):
-  - Generic slice index function
-  - Hex address decoding for `/proc/net/tcp` format
-  - Network address parsing utilities
+  - Generic slice index function with type parameters
+  - Hex address decoding for `/proc/net/tcp` format (little-endian conversion)
+  - Network address parsing utilities for IP:port combinations
 - **Port Utils** (`port.go`):
-  - Dynamic port allocation for proxy servers
+  - Dynamic port allocation for proxy servers using system-assigned free ports
 - **Certificate Utils** (`cert.go`):
   - Self-signed certificate generation for HTTPS server
-  - RSA 2048-bit key generation
+  - RSA 2048-bit key generation with proper certificate properties
   - Certificate valid for 1 year with localhost/127.0.0.1 SANs
+  - Persistent certificate storage in build directory
+  - Support for both custom and snake oil certificate modes
+- **Testing** (`utils_test.go`): Comprehensive test suite with 83.6% coverage
+  - Unit tests for all utility functions with success/failure scenarios
+  - Table-driven tests for hex decoding and address parsing
+  - Benchmark tests for performance measurement
+  - Certificate generation and validation testing
+  - Cross-platform temporary directory handling
 
 ## Technical Implementation
 
@@ -153,7 +161,8 @@ go-webfilter/
 │   └── utils/
 │       ├── cert.go               # Certificate generation utilities
 │       ├── port.go               # Port allocation utilities
-│       └── utils.go              # Address parsing utilities
+│       ├── utils.go              # Address parsing utilities
+│       └── utils_test.go         # Comprehensive test suite
 ├── build/                         # Build artifacts and certificates
 ├── Makefile                       # Build, test, and lint commands
 ├── .golangci.yml                  # Linter configuration
@@ -184,7 +193,17 @@ go-webfilter/
 
 ## Recent Updates
 
-### Testing Infrastructure (Latest)
+### Utils Package Testing Infrastructure (Latest)
+- Created comprehensive test suite `pkg/utils/utils_test.go` with 83.6% coverage
+- Added unit tests for all utility functions: Index, DecodeHex, ParseHexAddr, GetFreePort
+- Implemented certificate testing with LoadOrGenerateCert and generateAndSaveCert validation
+- Added table-driven tests for comprehensive input validation and edge cases
+- Included benchmark tests for performance measurement of core utility functions
+- Cross-platform temporary directory handling for certificate generation tests
+- Snake oil certificate mode testing with proper error handling
+- Proper test isolation using temporary working directories
+
+### Process Testing Infrastructure
 - Added comprehensive interface-based architecture with `pkg/proc/interfaces.go`
 - Implemented mock-based testing with `pkg/proc/mocks/lister.go`
 - Created extensive test suite `pkg/proc/proc_lister_test.go` with unit and integration tests
@@ -203,11 +222,14 @@ go-webfilter/
 ## Testing & Quality Assurance
 
 ### Test Suite Features
-- **Unit Tests**: Mock-based testing for all interface methods
+- **Unit Tests**: Mock-based testing for all interface methods and utility functions
 - **Integration Tests**: Real `/proc` filesystem testing (skippable in CI)
 - **Coverage Reports**: HTML coverage reports generated in build directory
 - **Interface Compliance**: Verification that implementations satisfy interfaces
 - **Error Handling**: Comprehensive error scenario testing
+- **Utils Testing**: 83.6% coverage with table-driven tests and benchmarks
+- **Certificate Testing**: Full certificate generation and validation workflows
+- **Cross-Platform**: Temporary directory handling for portability
 
 ### Code Quality
 - **Linter Integration**: golangci-lint with comprehensive rule set
