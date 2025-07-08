@@ -1,6 +1,6 @@
 # go-webfilter
 
-Pluggable, intercepting web filter written in Go
+Pluggable, intercepting web filter written in Go. Intended to be used as a library or as a standalone application.
 
 See [Project notes](./PROJECT_NOTES.md) for more details.
 
